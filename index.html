@@ -3,758 +3,692 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PartyArt App - Gestión de Decoraciones & Cotizaciones (Supabase)</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Party Art - Agenda y Contratos</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- jsPDF para contratos y cotizaciones en PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Supabase JS Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .tab-btn.active {
-            border-bottom-color: #ec4899;
-            color: #be185d;
-            font-weight: 700;
-        }
+        .tab-btn.active { border-bottom-color: #ec4899; color: #be185d; font-weight: 700; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #fdf2f8; }
-        ::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #fbcfe8; border-radius: 4px; }
     </style>
 </head>
-<body class="bg-pink-50/30 min-h-screen text-slate-800 flex flex-col justify-between">
+<body class="bg-pink-50/40 min-h-screen text-slate-800">
 
-    <!-- Header Principal -->
-    <header class="bg-gradient-to-r from-purple-900 via-fuchsia-800 to-pink-600 text-white shadow-lg sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+    <header class="bg-gradient-to-r from-pink-600 to-purple-700 text-white shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full border-2 border-white/80 shadow-md bg-white flex items-center justify-center text-xl font-black text-pink-600">
-                    🎨
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center p-0.5 overflow-hidden shadow-md">
+                    <!-- Tu logo de Party Art -->
+                    <img src="image_2bd68c.jpg" alt="Logo Party Art" class="w-full h-full object-contain" onerror="this.style.display='none'">
                 </div>
                 <div>
-                    <h1 class="text-base md:text-lg font-bold tracking-tight">PartyArt App - Decoraciones para Fiestas</h1>
-                    <div id="badge-cloud-status" class="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-300/40">
-                        <span>⚡</span> <span id="text-cloud-status">Conectando a Supabase...</span>
-                    </div>
+                    <h1 class="text-lg font-bold">Party Art - Control de Eventos</h1>
+                    <div id="cloud-status" class="text-[10px] px-2 py-0.5 rounded-full bg-white/20 mt-1 inline-block">Conectando...</div>
                 </div>
             </div>
-            <div class="flex items-center space-x-2 text-xs">
-                <button onclick="sincronizarConNube()" class="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl font-medium transition flex items-center gap-1">
-                    ☁️ Forzar Sincronización
-                </button>
-            </div>
+            <button onclick="sincronizarConNube()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl text-xs font-medium transition">☁️ Sincronizar</button>
         </div>
     </header>
 
-    <!-- Navegación por Pestañas -->
-    <main class="max-w-7xl mx-auto w-full px-3 md:px-6 py-4 flex-1">
-        <div class="bg-white rounded-2xl shadow-sm border border-pink-100 mb-6 overflow-x-auto">
-            <div class="flex border-b border-pink-100 min-w-max">
-                <button onclick="switchTab('tab-cotizador')" id="btn-tab-cotizador" class="tab-btn active px-5 py-3 border-b-2 border-transparent text-sm text-slate-600 hover:text-pink-600 transition flex items-center gap-2">
-                    🪄 <span>Nueva Cotización / Contrato</span>
-                </button>
-                <button onclick="switchTab('tab-agenda')" id="btn-tab-agenda" class="tab-btn px-5 py-3 border-b-2 border-transparent text-sm text-slate-600 hover:text-pink-600 transition flex items-center gap-2">
-                    📅 <span>Agenda & Calendario</span>
-                </button>
-                <button onclick="switchTab('tab-catalogo')" id="btn-tab-catalogo" class="tab-btn px-5 py-3 border-b-2 border-transparent text-sm text-slate-600 hover:text-pink-600 transition flex items-center gap-2">
-                    🎈 <span>Catálogo de Eventos</span>
-                </button>
-                <button onclick="switchTab('tab-clientes')" id="btn-tab-clientes" class="tab-btn px-5 py-3 border-b-2 border-transparent text-sm text-slate-600 hover:text-pink-600 transition flex items-center gap-2">
-                    👤 <span>Clientes</span>
-                </button>
-                <button onclick="switchTab('tab-inventario')" id="btn-tab-inventario" class="tab-btn px-5 py-3 border-b-2 border-transparent text-sm text-slate-600 hover:text-pink-600 transition flex items-center gap-2">
-                    📦 <span>Inventario Decorativo</span>
-                </button>
-            </div>
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Navegación -->
+        <div class="bg-white rounded-2xl shadow-sm border border-pink-100 mb-6 flex overflow-x-auto">
+            <button onclick="switchTab('tab-contrato')" id="btn-tab-contrato" class="tab-btn active px-5 py-3 border-b-2 border-transparent text-sm text-slate-600 hover:text-pink-600 transition flex items-center gap-2 min-w-max">📝 Nuevo Contrato</button>
+            <button onclick="switchTab('tab-agenda')" id="btn-tab-agenda" class="tab-btn px-5 py-3 border-b-2 border-transparent text-sm text-slate-600 hover:text-pink-600 transition flex items-center gap-2 min-w-max">📅 Agenda</button>
+            <button onclick="switchTab('tab-inventario')" id="btn-tab-inventario" class="tab-btn px-5 py-3 border-b-2 border-transparent text-sm text-slate-600 hover:text-pink-600 transition flex items-center gap-2 min-w-max">📦 Inventario Decoración</button>
+            <button onclick="switchTab('tab-clientes')" id="btn-tab-clientes" class="tab-btn px-5 py-3 border-b-2 border-transparent text-sm text-slate-600 hover:text-pink-600 transition flex items-center gap-2 min-w-max">👤 Clientes</button>
         </div>
 
-        <!-- PESTAÑA 1: COTIZADOR & CONTRATO -->
-        <section id="tab-cotizador" class="tab-content space-y-6">
+        <!-- PESTAÑA 1: NUEVO CONTRATO -->
+        <section id="tab-contrato" class="tab-content space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- Columna 1: Elementos Decorativos -->
+                
+                <!-- Detalles del Evento -->
                 <div class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
-                    <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                        <span class="bg-pink-100 text-pink-700 w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">1</span>
-                        Agregar Elementos al Montaje
-                    </h2>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Artículo del Inventario</label>
-                        <select id="cot-item-select" class="w-full p-2.5 bg-pink-50/50 border border-pink-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-pink-500 font-medium"></select>
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="w-1/2">
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Cantidad</label>
-                            <input type="number" id="cot-cantidad" value="1" min="1" class="w-full p-2 bg-pink-50/50 border border-pink-200 rounded-xl text-xs font-bold text-center outline-none">
-                        </div>
-                        <div class="w-1/2 flex items-end">
-                            <button onclick="agregarItemCotizacion()" class="w-full bg-pink-600 hover:bg-pink-700 text-white py-2.5 rounded-xl text-xs font-bold shadow-sm transition">➕ Agregar</button>
-                        </div>
-                    </div>
-                    <div class="max-h-48 overflow-y-auto border border-pink-100 rounded-xl p-2 bg-slate-50 divide-y divide-pink-100 text-xs" id="cot-lista-carrito">
-                        <p class="text-slate-400 text-center py-4">No hay elementos agregados.</p>
-                    </div>
-                </div>
-
-                <!-- Columna 2: Datos del Cliente y Evento -->
-                <div class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
-                    <h2 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                        <span class="bg-purple-100 text-purple-700 w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">2</span>
-                        Datos del Cliente & Evento
-                    </h2>
+                    <h2 class="font-bold text-slate-800 text-sm">Datos del Cliente y Evento</h2>
                     <div>
                         <label class="block text-xs font-semibold text-slate-600 mb-1">Cliente *</label>
-                        <select id="cot-cliente-select" class="w-full p-2.5 bg-pink-50/50 border border-pink-200 rounded-xl text-xs outline-none font-medium"></select>
+                        <select id="con-cliente" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Ubicación exacta del Evento *</label>
-                        <input type="text" id="cot-ubicacion" placeholder="Salón, Dirección, Referencias..." class="w-full p-2.5 bg-pink-50/50 border border-pink-200 rounded-xl text-xs outline-none">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Salón o Ubicación *</label>
+                        <input type="text" id="con-salon" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Evento *</label>
+                        <input type="text" id="con-tipo" placeholder="Ej. Cumpleaños, Boda..." class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha del Evento *</label>
-                            <input type="date" id="cot-fecha" class="w-full p-2 bg-pink-50/50 border border-pink-200 rounded-xl text-xs outline-none">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Fecha *</label>
+                            <input type="date" id="con-fecha" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Hora Montaje *</label>
-                            <input type="time" id="cot-hora" value="10:00" class="w-full p-2 bg-pink-50/50 border border-pink-200 rounded-xl text-xs outline-none">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Hora *</label>
+                            <input type="time" id="con-hora" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
                         </div>
                     </div>
                 </div>
 
-                <!-- Columna 3: Totales & Fotos -->
+                <!-- Selección de Inventario -->
+                <div class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm space-y-4">
+                    <h2 class="font-bold text-slate-800 text-sm">Elementos del Montaje (Opcional)</h2>
+                    <div class="flex gap-2">
+                        <select id="con-item" class="w-2/3 p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></select>
+                        <input type="number" id="con-cant" value="1" min="1" class="w-1/3 p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-center">
+                    </div>
+                    <button onclick="agregarItemContrato()" class="w-full py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold rounded-xl text-xs transition">Añadir al Contrato</button>
+                    
+                    <div id="con-lista" class="max-h-32 overflow-y-auto border border-slate-100 rounded-xl p-2 bg-slate-50 text-xs divide-y divide-slate-100">
+                        <p class="text-slate-400 text-center py-2">Sin elementos</p>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Notas Adicionales (Opcional)</label>
+                        <textarea id="con-adicionales" rows="2" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"></textarea>
+                    </div>
+                </div>
+
+                <!-- Totales y Generación -->
                 <div class="bg-white p-5 rounded-2xl border border-pink-100 shadow-sm flex flex-col justify-between space-y-4">
                     <div>
-                        <h2 class="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-                            <span class="bg-emerald-100 text-emerald-700 w-6 h-6 rounded-full inline-flex items-center justify-center text-xs">3</span>
-                            Total & Evidencia Visual
-                        </h2>
-                        <div class="space-y-2 text-xs">
+                        <h2 class="font-bold text-slate-800 text-sm mb-3">Totales del Servicio</h2>
+                        <div class="space-y-3 text-xs">
                             <div>
-                                <label class="block text-semibold text-slate-600 mb-1">Anticipo / Depósito ($)</label>
-                                <input type="number" id="cot-anticipo" value="0" min="0" oninput="calcularTotalesCotizacion()" class="w-full p-2 bg-pink-50/50 border border-pink-200 rounded-xl text-xs font-bold text-emerald-700 outline-none">
+                                <label class="block font-semibold text-slate-600 mb-1">Costo Total ($)</label>
+                                <input type="number" id="con-total-manual" oninput="calcularSaldos()" class="w-full p-2 border border-slate-200 rounded-xl font-bold text-slate-800">
                             </div>
                             <div>
-                                <label class="block text-semibold text-slate-600 mb-1">Subir Fotos de Referencia (1 o más)</label>
-                                <input type="file" id="cot-fotos-input" accept="image/*" multiple class="w-full p-1.5 border border-pink-200 rounded-xl text-[11px] bg-slate-50">
+                                <label class="block font-semibold text-slate-600 mb-1">Anticipo Recibido ($)</label>
+                                <input type="number" id="con-anticipo" value="0" oninput="calcularSaldos()" class="w-full p-2 border border-slate-200 rounded-xl font-bold text-emerald-600">
                             </div>
-                            <div class="bg-slate-900 text-white p-3.5 rounded-xl space-y-1 mt-2 text-xs">
-                                <div class="flex justify-between"><span>Total Cotización:</span><span id="cot-resumen-total" class="font-bold text-pink-400 text-sm">$0.00</span></div>
-                                <div class="flex justify-between text-emerald-400"><span>Anticipo:</span><span id="cot-resumen-anticipo">$0.00</span></div>
-                                <div class="flex justify-between text-amber-300 font-bold border-t border-slate-800 pt-1"><span>Saldo Restante:</span><span id="cot-resumen-saldo">$0.00</span></div>
+                            <div class="bg-slate-800 text-white p-3 rounded-xl flex justify-between font-bold mt-2 text-sm">
+                                <span>Saldo Restante:</span>
+                                <span id="con-saldo-text">$0.00</span>
                             </div>
                         </div>
                     </div>
-                    <div class="space-y-2">
-                        <button onclick="guardarYGenerarContrato()" class="w-full py-3 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold rounded-xl shadow-md text-xs hover:opacity-95 transition">
-                            💾 Guardar Evento & Generar PDF
-                        </button>
-                    </div>
+                    <button onclick="generarYGuardarContrato()" class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-md text-sm transition">
+                        📄 Generar Contrato PDF
+                    </button>
                 </div>
+
             </div>
         </section>
 
-        <!-- PESTAÑA 2: AGENDA & CALENDARIO -->
+        <!-- PESTAÑA 2: AGENDA (CALENDARIO VISUAL) -->
         <section id="tab-agenda" class="tab-content hidden space-y-4">
-            <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-sm space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="font-bold text-slate-800 text-lg">📅 Calendario de Montajes y Eventos</h2>
-                    <p class="text-xs text-slate-500">Haz clic en cualquier evento para ver detalles y contratos.</p>
+            <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-sm">
+                
+                <!-- Controles del Calendario -->
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="font-bold text-slate-800 text-lg hidden sm:block">📅 Agenda de Eventos</h2>
+                    <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                        <button onclick="cambiarMes(-1)" class="p-2 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-lg font-bold transition">⬅️ Ant.</button>
+                        <span id="mes-anio-calendario" class="font-bold text-slate-700 text-base min-w-[140px] text-center capitalize">Cargando...</span>
+                        <button onclick="cambiarMes(1)" class="p-2 bg-pink-50 text-pink-700 hover:bg-pink-100 rounded-lg font-bold transition">Sig. ➡️</button>
+                    </div>
                 </div>
-                <div id="calendario-grid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+
+                <!-- Cabecera de días -->
+                <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-400 mb-2 uppercase">
+                    <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div>
+                </div>
+
+                <!-- Cuadrícula del Calendario -->
+                <div id="grid-calendario" class="grid grid-cols-7 gap-1 sm:gap-2">
+                    <!-- Los días se llenan con JavaScript -->
+                </div>
             </div>
         </section>
 
-        <!-- PESTAÑA 3: CATÁLOGO DE EVENTOS -->
-        <section id="tab-catalogo" class="tab-content hidden space-y-4">
-            <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-sm space-y-4">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                    <h2 class="font-bold text-slate-800 text-lg">🎈 Catálogo General de Decoraciones</h2>
-                    <div class="flex flex-wrap gap-2 text-xs">
-                        <select id="cat-filtro-estado" onchange="renderizarCatalogo()" class="p-2 bg-pink-50 border border-pink-200 rounded-xl font-semibold text-slate-700 outline-none">
-                            <option value="TODOS">Todos los Estados</option>
-                            <option value="Pendiente">Pendientes de Montaje</option>
-                            <option value="Completado">Completados</option>
-                        </select>
-                        <select id="cat-filtro-pago" onchange="renderizarCatalogo()" class="p-2 bg-pink-50 border border-pink-200 rounded-xl font-semibold text-slate-700 outline-none">
-                            <option value="TODOS">Pagos: Todos</option>
-                            <option value="Pagado Total">Pagado Total</option>
-                            <option value="Pendiente Saldo">Pendiente Saldo</option>
-                        </select>
-                        <select id="cat-orden" onchange="renderizarCatalogo()" class="p-2 bg-pink-50 border border-pink-200 rounded-xl font-semibold text-slate-700 outline-none">
-                            <option value="RECENTES">Más Recientes Primero</option>
-                            <option value="ANTIGUOS">Más Antiguos Primero</option>
-                        </select>
-                    </div>
+        <!-- PESTAÑA 3: INVENTARIO -->
+        <section id="tab-inventario" class="tab-content hidden space-y-4">
+            <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-sm">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-slate-800 text-lg">📦 Inventario Decoración</h2>
+                    <button onclick="document.getElementById('modal-inv').classList.remove('hidden')" class="bg-pink-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition hover:bg-pink-700">➕ Agregar Elemento</button>
                 </div>
-                <div id="catalogo-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                                <th class="p-3">Nombre del Elemento</th>
+                                <th class="p-3">Precio Base</th>
+                                <th class="p-3 w-20 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-inv" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
             </div>
         </section>
 
         <!-- PESTAÑA 4: CLIENTES -->
         <section id="tab-clientes" class="tab-content hidden space-y-4">
-            <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-sm space-y-4">
-                <div class="flex justify-between items-center">
+            <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-sm">
+                <div class="flex justify-between items-center mb-4">
                     <h2 class="font-bold text-slate-800 text-lg">👤 Directorio de Clientes</h2>
-                    <button onclick="abrirModalCliente()" class="bg-pink-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">➕ Nuevo Cliente</button>
+                    <button onclick="document.getElementById('modal-cli').classList.remove('hidden')" class="bg-pink-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm transition hover:bg-pink-700">➕ Nuevo Cliente</button>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-pink-50/50 border-b border-pink-100 text-slate-600 font-semibold">
+                            <tr class="bg-slate-50 border-b border-slate-200">
                                 <th class="p-3">Nombre</th>
                                 <th class="p-3">Teléfono</th>
-                                <th class="p-3">Ubicación / Dirección Frecuente</th>
-                                <th class="p-3 text-center">Acciones</th>
+                                <th class="p-3">Ciudad / Dirección</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-clientes-body" class="divide-y divide-pink-50"></tbody>
+                        <tbody id="tabla-cli" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- PESTAÑA 5: INVENTARIO DECORATIVO -->
-        <section id="tab-inventario" class="tab-content hidden space-y-4">
-            <div class="bg-white p-6 rounded-2xl border border-pink-100 shadow-sm space-y-4">
-                <div class="flex justify-between items-center">
-                    <h2 class="font-bold text-slate-800 text-lg">📦 Inventario de Elementos Decorativos</h2>
-                    <button onclick="abrirModalInventario()" class="bg-pink-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm">➕ Nuevo Artículo</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-pink-50/50 border-b border-pink-100 text-slate-600 font-semibold">
-                                <th class="p-3">Código SKU</th>
-                                <th class="p-3">Artículo / Decoración</th>
-                                <th class="p-3">Precio Unitario ($)</th>
-                                <th class="p-3">Stock</th>
-                                <th class="p-3 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabla-inventario-body" class="divide-y divide-pink-50"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
     </main>
 
-    <!-- MODAL DETALLE DE EVENTO -->
-    <div id="modal-detalle-evento" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 text-xs">
-            <div class="flex justify-between items-center border-b pb-2">
-                <h3 id="modal-evento-titulo" class="font-bold text-slate-800 text-base">Detalles del Evento</h3>
-                <button onclick="cerrarModalEvento()" class="text-slate-400 font-bold text-base">✕</button>
+    <!-- MODAL EVENTOS DEL DÍA -->
+    <div id="modal-eventos-dia" class="fixed inset-0 bg-slate-900/60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl">
+            <div class="flex justify-between items-center border-b border-pink-100 pb-3 mb-4">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2">
+                    <span class="text-2xl">🎈</span>
+                    <span id="titulo-modal-dia">Eventos del Día</span>
+                </h3>
+                <button onclick="document.getElementById('modal-eventos-dia').classList.add('hidden')" class="text-slate-400 hover:text-rose-500 font-bold text-2xl transition">&times;</button>
             </div>
-            <div id="modal-evento-contenido" class="space-y-2 text-slate-600"></div>
-            <div class="flex justify-end gap-2 pt-2 border-t">
-                <button onclick="enviarWhatsAppEvento()" class="px-4 py-2 bg-emerald-600 text-white rounded-xl font-bold">📱 Enviar WhatsApp</button>
-                <button onclick="descargarPDFEventoDesdeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl font-bold">📄 Descargar PDF</button>
+            
+            <div id="lista-eventos-dia" class="space-y-3 max-h-80 overflow-y-auto pr-1">
+                <!-- Se llena con JS -->
+            </div>
+            
+            <div class="flex justify-end pt-4 mt-2 border-t border-pink-50">
+                <button onclick="document.getElementById('modal-eventos-dia').classList.add('hidden')" class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold transition">Cerrar</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL CLIENTE -->
-    <div id="modal-cliente" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3 text-xs">
-            <h3 class="font-bold text-slate-800 text-sm">Registrar Nuevo Cliente</h3>
-            <div><label class="block font-semibold mb-1">Nombre Completo *</label><input type="text" id="cli-nombre" class="w-full p-2 border rounded-xl"></div>
-            <div><label class="block font-semibold mb-1">Teléfono / WhatsApp *</label><input type="text" id="cli-telefono" class="w-full p-2 border rounded-xl"></div>
-            <div><label class="block font-semibold mb-1">Ubicación / Dirección *</label><input type="text" id="cli-ubicacion" class="w-full p-2 border rounded-xl"></div>
+    <div id="modal-cli" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-5 w-full max-w-sm space-y-3 text-xs shadow-xl">
+            <h3 class="font-bold text-lg mb-2">Registrar Cliente</h3>
+            <input type="text" id="cli-nom" placeholder="Nombre Completo" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-pink-400">
+            <input type="text" id="cli-tel" placeholder="Teléfono" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-pink-400">
+            <input type="text" id="cli-ciu" placeholder="Ciudad (Ej. Xalapa, Coatepec)" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-pink-400">
+            <input type="text" id="cli-dir" placeholder="Dirección" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-pink-400">
             <div class="flex justify-end gap-2 pt-2">
-                <button onclick="cerrarModalCliente()" class="px-3 py-1.5 bg-slate-200 rounded-xl">Cancelar</button>
-                <button onclick="guardarCliente()" class="px-4 py-1.5 bg-pink-600 text-white rounded-xl font-semibold">Guardar</button>
+                <button onclick="document.getElementById('modal-cli').classList.add('hidden')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-xl font-bold transition">Cancelar</button>
+                <button onclick="guardarCliente()" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold transition">Guardar</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL INVENTARIO -->
-    <div id="modal-inventario" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-xl space-y-3 text-xs">
-            <h3 class="font-bold text-slate-800 text-sm">Registrar Artículo en Inventario</h3>
-            <div><label class="block font-semibold mb-1">SKU *</label><input type="text" id="inv-sku" class="w-full p-2 border rounded-xl"></div>
-            <div><label class="block font-semibold mb-1">Nombre Artículo *</label><input type="text" id="inv-nombre" class="w-full p-2 border rounded-xl"></div>
-            <div><label class="block font-semibold mb-1">Precio ($) *</label><input type="number" id="inv-precio" class="w-full p-2 border rounded-xl" value="100"></div>
-            <div><label class="block font-semibold mb-1">Stock *</label><input type="number" id="inv-stock" class="w-full p-2 border rounded-xl" value="10"></div>
+    <div id="modal-inv" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl p-5 w-full max-w-sm space-y-3 text-xs shadow-xl">
+            <h3 class="font-bold text-lg mb-2">Nuevo Elemento</h3>
+            <input type="text" id="inv-nom" placeholder="Nombre (Ej. Mampara de Nubes)" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-pink-400">
+            <input type="number" id="inv-pre" placeholder="Precio Estimado ($)" class="w-full p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-pink-400">
             <div class="flex justify-end gap-2 pt-2">
-                <button onclick="cerrarModalInventario()" class="px-3 py-1.5 bg-slate-200 rounded-xl">Cancelar</button>
-                <button onclick="guardarInventarioItem()" class="px-4 py-1.5 bg-pink-600 text-white rounded-xl font-semibold">Guardar</button>
+                <button onclick="document.getElementById('modal-inv').classList.add('hidden')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-xl font-bold transition">Cancelar</button>
+                <button onclick="guardarInventario()" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-bold transition">Guardar</button>
             </div>
         </div>
     </div>
 
-    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+    <div id="toast" class="fixed bottom-4 right-4 z-50"></div>
 
-    <!-- SCRIPT DE CONEXIÓN A SUPABASE & LÓGICA -->
     <script>
-        // Credenciales oficiales de Supabase
         const SUPABASE_URL = "https://vyhxsgbvgpccxrcilohv.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5aHhzZ2J2Z3BjY3hyY2lsb2h2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4NTg0NjMsImV4cCI6MjEwMTQzNDQ2M30.OaT4Tzsfhf4C46mbO8_exD9stmIRC5DFlJcL4WKtVzg";
-
         let supabaseClient = null;
 
+        // Fecha de control para navegar entre meses en el calendario
+        let fechaActualCalendario = new Date();
+
         let state = {
-            inventario: JSON.parse(localStorage.getItem('party_inv')) || [
-                { sku: "GLO-01", nombre: "Arco de Globos Orgánico", precio: 1500, stock: 5 },
-                { sku: "FON-02", nombre: "Fondo de Telón con Luces Led", precio: 2200, stock: 3 },
-                { sku: "MES-03", nombre: "Mesa Principal Cilindros (Set 3)", precio: 800, stock: 4 }
-            ],
-            clientes: JSON.parse(localStorage.getItem('party_cli')) || [
-                { id: 1, nombre: "Sofía Morales", telefono: "2281234567", ubicacion: "Salón Las Palmas, Xalapa" }
-            ],
-            eventos: JSON.parse(localStorage.getItem('party_evs')) || [],
-            carritoCotizacion: []
+            inventario: JSON.parse(localStorage.getItem('pa_inv')) || [],
+            clientes: JSON.parse(localStorage.getItem('pa_cli')) || [],
+            eventos: JSON.parse(localStorage.getItem('pa_eve')) || [],
+            carritoActual: []
         };
 
-        let eventoSeleccionadoModal = null;
-
-        window.onload = async function() {
-            document.getElementById('cot-fecha').value = new Date().toISOString().split('T')[0];
-            
-            // Inicializar cliente Supabase
+        window.onload = async () => {
+            document.getElementById('con-fecha').value = new Date().toISOString().split('T')[0];
             if (window.supabase) {
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 await sincronizarConNube();
-            } else {
-                actualizarEstadoNube(false);
             }
-
-            actualizarSelectsCotizador();
-            renderizarInventario();
-            renderizarClientes();
-            renderizarAgenda();
-            renderizarCatalogo();
+            actualizarUI();
         };
-
-        function actualizarEstadoNube(conectado) {
-            const badge = document.getElementById('badge-cloud-status');
-            const txt = document.getElementById('text-cloud-status');
-            if (conectado) {
-                badge.className = "inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-100 border border-emerald-300/40";
-                txt.innerText = "⚡ Nube Supabase Sincronizada";
-            } else {
-                badge.className = "inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-100 border border-amber-300/40";
-                txt.innerText = "Modo Local (Offline)";
-            }
-        }
-
-        async function sincronizarConNube() {
-            if (!supabaseClient) return;
-            try {
-                // Cargar Inventario
-                const { data: invData } = await supabaseClient.from('inventario').select('*');
-                if (invData && invData.length > 0) state.inventario = invData;
-
-                // Cargar Clientes
-                const { data: cliData } = await supabaseClient.from('clientes').select('*');
-                if (cliData && cliData.length > 0) state.clientes = cliData;
-
-                // Cargar Eventos
-                const { data: evData } = await supabaseClient.from('eventos').select('*');
-                if (evData && evData.length > 0) {
-                    state.eventos = evData.map(e => ({
-                        id: e.id,
-                        cliente: e.cliente,
-                        ubicacion: e.ubicacion,
-                        fecha: e.fecha,
-                        hora: e.hora,
-                        items: typeof e.items === 'string' ? JSON.parse(e.items) : e.items,
-                        total: Number(e.total || 0),
-                        anticipo: Number(e.anticipo || 0),
-                        saldo: Number(e.saldo || 0),
-                        estado: e.estado,
-                        pagoEstado: e.pago_estado,
-                        fotos: typeof e.fotos === 'string' ? JSON.parse(e.fotos) : e.fotos
-                    }));
-                }
-
-                guardarLocal();
-                actualizarEstadoNube(true);
-                actualizarSelectsCotizador();
-                renderizarInventario();
-                renderizarClientes();
-                renderizarAgenda();
-                renderizarCatalogo();
-                mostrarToast("☁️ Datos sincronizados con Supabase.");
-            } catch (err) {
-                console.warn("Error al sincronizar con Supabase, usando respaldo local:", err);
-                actualizarEstadoNube(false);
-            }
-        }
-
-        function guardarLocal() {
-            localStorage.setItem('party_inv', JSON.stringify(state.inventario));
-            localStorage.setItem('party_cli', JSON.stringify(state.clientes));
-            localStorage.setItem('party_evs', JSON.stringify(state.eventos));
-        }
-
-        function mostrarToast(msg) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = "bg-slate-900 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-lg pointer-events-auto";
-            toast.innerText = msg;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabId).classList.remove('hidden');
-            document.getElementById(`btn-${tabId}`).classList.add('active');
-            if(tabId === 'tab-agenda') renderizarAgenda();
-            if(tabId === 'tab-catalogo') renderizarCatalogo();
-        }
-
-        // --- COTIZADOR ---
-        function actualizarSelectsCotizador() {
-            const selItem = document.getElementById('cot-item-select');
-            selItem.innerHTML = state.inventario.map(i => `<option value="${i.sku}">${i.nombre} ($${i.precio})</option>`).join('');
-
-            const selCli = document.getElementById('cot-cliente-select');
-            selCli.innerHTML = state.clientes.map(c => `<option value="${c.nombre}">${c.nombre} (${c.telefono})</option>`).join('');
-        }
-
-        function agregarItemCotizacion() {
-            const sku = document.getElementById('cot-item-select').value;
-            const cant = parseInt(document.getElementById('cot-cantidad').value) || 1;
-            const item = state.inventario.find(i => i.sku === sku);
-            if(!item) return;
-
-            const existe = state.carritoCotizacion.find(i => i.sku === sku);
-            if(existe) {
-                existe.cantidad += cant;
-            } else {
-                state.carritoCotizacion.push({ sku: item.sku, nombre: item.nombre, precio: item.precio, cantidad: cant });
-            }
-            renderizarCarritoCotizacion();
-        }
-
-        function renderizarCarritoCotizacion() {
-            const cont = document.getElementById('cot-lista-carrito');
-            if(state.carritoCotizacion.length === 0) {
-                cont.innerHTML = `<p class="text-slate-400 text-center py-4">No hay elementos agregados.</p>`;
-                calcularTotalesCotizacion();
-                return;
-            }
-            cont.innerHTML = state.carritoCotizacion.map(i => `
-                <div class="flex justify-between items-center py-1">
-                    <span><b>${i.cantidad}x</b> ${i.nombre}</span>
-                    <span class="font-bold text-pink-600">$${(i.precio * i.cantidad).toFixed(2)}</span>
-                </div>
-            `).join('');
-            calcularTotalesCotizacion();
-        }
-
-        function calcularTotalesCotizacion() {
-            const total = state.carritoCotizacion.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
-            const anticipo = parseFloat(document.getElementById('cot-anticipo').value) || 0;
-            const saldo = Math.max(0, total - anticipo);
-
-            document.getElementById('cot-resumen-total').innerText = `$${total.toFixed(2)}`;
-            document.getElementById('cot-resumen-anticipo').innerText = `$${anticipo.toFixed(2)}`;
-            document.getElementById('cot-resumen-saldo').innerText = `$${saldo.toFixed(2)}`;
-        }
-
-        async function guardarYGenerarContrato() {
-            if(state.carritoCotizacion.length === 0) {
-                mostrarToast("Agrega al menos un elemento decorativo.");
-                return;
-            }
-            const cliente = document.getElementById('cot-cliente-select').value;
-            const ubicacion = document.getElementById('cot-ubicacion').value.trim();
-            const fecha = document.getElementById('cot-fecha').value;
-            const hora = document.getElementById('cot-hora').value;
-
-            if(!ubicacion) {
-                mostrarToast("Indica la ubicación del evento.");
-                return;
-            }
-
-            const total = state.carritoCotizacion.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
-            const anticipo = parseFloat(document.getElementById('cot-anticipo').value) || 0;
-            const saldo = Math.max(0, total - anticipo);
-
-            const inputFotos = document.getElementById('cot-fotos-input');
-            let fotosArray = [];
-            if(inputFotos.files.length > 0) {
-                for(let file of inputFotos.files) {
-                    const base64 = await convertirBase64(file);
-                    fotosArray.push(base64);
-                }
-            } else {
-                fotosArray.push("https://images.unsplash.com/photo-1519741497674-611481863552?w=500&auto=format&fit=crop");
-            }
-
-            const nuevoEvento = {
-                id: Date.now(),
-                cliente: cliente,
-                ubicacion: ubicacion,
-                fecha: fecha,
-                hora: hora,
-                items: [...state.carritoCotizacion],
-                total: total,
-                anticipo: anticipo,
-                saldo: saldo,
-                estado: "Pendiente",
-                pagoEstado: saldo === 0 ? "Pagado Total" : "Pendiente Saldo",
-                fotos: fotosArray
-            };
-
-            // 1. Guardar localmente
-            state.eventos.unshift(nuevoEvento);
-            guardarLocal();
-
-            // 2. Guardar en Supabase
-            if (supabaseClient) {
-                try {
-                    await supabaseClient.from('eventos').insert([{
-                        id: nuevoEvento.id,
-                        cliente: nuevoEvento.cliente,
-                        ubicacion: nuevoEvento.ubicacion,
-                        fecha: nuevoEvento.fecha,
-                        hora: nuevoEvento.hora,
-                        items: JSON.stringify(nuevoEvento.items),
-                        total: nuevoEvento.total,
-                        anticipo: nuevoEvento.anticipo,
-                        saldo: nuevoEvento.saldo,
-                        estado: nuevoEvento.estado,
-                        pago_estado: nuevoEvento.pagoEstado,
-                        fotos: JSON.stringify(nuevoEvento.fotos)
-                    }]);
-                } catch (err) {
-                    console.warn("Fallo al guardar en Supabase, respaldado local:", err);
-                }
-            }
-
-            generarPDFContrato(nuevoEvento);
-            mostrarToast("✨ Evento guardado y contrato generado en PDF.");
-            state.carritoCotizacion = [];
-            renderizarCarritoCotizacion();
-            switchTab('tab-catalogo');
-        }
-
-        function convertirBase64(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = e => resolve(e.target.result);
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // --- GENERADOR PDF ---
-        function generarPDFContrato(ev) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            doc.setFillColor(236, 72, 153);
-            doc.rect(0, 0, 210, 35, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(22);
-            doc.text("PartyArt App - Contrato de Decoración", 15, 22);
-
-            doc.setTextColor(50, 50, 50);
-            doc.setFontSize(12);
-            doc.text(`Folio Contrato: #${ev.id}`, 15, 48);
-            doc.text(`Cliente: ${ev.cliente}`, 15, 56);
-            doc.text(`Ubicación del Evento: ${ev.ubicacion}`, 15, 64);
-            doc.text(`Fecha de Montaje: ${ev.fecha} a las ${ev.hora} hrs`, 15, 72);
-
-            doc.line(15, 80, 195, 80);
-
-            doc.setFont("helvetica", "bold");
-            doc.text("Detalle de Elementos Decorativos", 15, 90);
+            document.getElementById('btn-' + tabId).classList.add('active');
             
-            let y = 100;
-            doc.setFont("helvetica", "normal");
-            ev.items.forEach(i => {
-                doc.text(`• ${i.cantidad}x ${i.nombre}`, 20, y);
-                doc.text(`$${(i.precio * i.cantidad).toFixed(2)}`, 170, y, {align: 'right'});
-                y += 8;
-            });
-
-            y += 10;
-            doc.line(15, y, 195, y);
-            y += 10;
-
-            doc.setFont("helvetica", "bold");
-            doc.text(`Total Montaje: $${ev.total.toFixed(2)}`, 195, y, {align: 'right'});
-            y += 8;
-            doc.text(`Anticipo Recibido: $${ev.anticipo.toFixed(2)}`, 195, y, {align: 'right'});
-            y += 8;
-            doc.setTextColor(219, 39, 119);
-            doc.text(`Saldo Pendiente: $${ev.saldo.toFixed(2)}`, 195, y, {align: 'right'});
-
-            doc.save(`Contrato_PartyArt_${ev.id}.pdf`);
+            // Si entra a la agenda, asegurar que el calendario se pinte correctamente
+            if(tabId === 'tab-agenda') renderizarCalendario();
         }
 
-        // --- AGENDA & CALENDARIO ---
-        function renderizarAgenda() {
-            const grid = document.getElementById('calendario-grid');
-            if(state.eventos.length === 0) {
-                grid.innerHTML = `<p class="text-slate-400 col-span-full text-center py-8">No hay eventos programados en la agenda.</p>`;
-                return;
+        async function sincronizarConNube() {
+            if (!supabaseClient) return;
+            try {
+                const [resInv, resCli, resEve] = await Promise.all([
+                    supabaseClient.from('party_inventario').select('*'),
+                    supabaseClient.from('party_clientes').select('*'),
+                    supabaseClient.from('party_eventos').select('*')
+                ]);
+                
+                if(resInv.data) state.inventario = resInv.data;
+                if(resCli.data) state.clientes = resCli.data;
+                if(resEve.data) state.eventos = resEve.data;
+                
+                guardarLocal();
+                actualizarUI();
+                document.getElementById('cloud-status').innerText = "Sincronizado";
+                document.getElementById('cloud-status').className = "text-[10px] px-2 py-0.5 rounded-full bg-emerald-400/20 text-emerald-100 mt-1 inline-block";
+            } catch (e) {
+                console.error("Error sincronizando", e);
             }
-            grid.innerHTML = state.eventos.map(ev => `
-                <div onclick="abrirModalDetalle(${ev.id})" class="bg-white p-4 rounded-2xl border border-pink-100 shadow-sm hover:shadow-md transition cursor-pointer space-y-2">
-                    <div class="flex justify-between items-center"><span class="text-xs font-bold text-pink-600">📅 ${ev.fecha}</span><span class="text-[10px] px-2 py-0.5 rounded-full ${ev.estado === 'Completado' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${ev.estado}</span></div>
-                    <h3 class="font-bold text-slate-800">${ev.cliente}</h3>
-                    <p class="text-xs text-slate-500 truncate">📍 ${ev.ubicacion}</p>
-                    <p class="text-xs font-bold text-slate-700">Saldo: $${ev.saldo.toFixed(2)}</p>
-                </div>
+        }
+
+        function guardarLocal() {
+            localStorage.setItem('pa_inv', JSON.stringify(state.inventario));
+            localStorage.setItem('pa_cli', JSON.stringify(state.clientes));
+            localStorage.setItem('pa_eve', JSON.stringify(state.eventos));
+        }
+
+        function actualizarUI() {
+            // Selects de Contrato
+            document.getElementById('con-cliente').innerHTML = `<option value="">-- Selecciona Cliente --</option>` + state.clientes.map(c => `<option value="${c.nombre}">${c.nombre} - ${c.ciudad}</option>`).join('');
+            document.getElementById('con-item').innerHTML = state.inventario.map(i => `<option value="${i.sku}">${i.nombre} ($${i.precio})</option>`).join('');
+            
+            // Tablas de Inventario y Clientes
+            document.getElementById('tabla-inv').innerHTML = state.inventario.map(i => `
+                <tr class="border-b hover:bg-slate-50 transition">
+                    <td class="p-3 font-semibold text-slate-700">${i.nombre}</td>
+                    <td class="p-3 font-bold text-slate-800">$${i.precio}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="borrarInv('${i.sku}')" class="text-rose-500 font-bold hover:text-rose-700 p-2 rounded-lg bg-rose-50 hover:bg-rose-100 transition">✕</button>
+                    </td>
+                </tr>
             `).join('');
+            
+            document.getElementById('tabla-cli').innerHTML = state.clientes.map(c => `<tr class="border-b hover:bg-slate-50"><td class="p-3 font-bold">${c.nombre}</td><td class="p-3">${c.telefono}</td><td class="p-3">${c.ciudad}, ${c.direccion}</td></tr>`).join('');
+            
+            renderizarCalendario();
         }
 
-        function abrirModalDetalle(id) {
-            const ev = state.eventos.find(x => x.id === id);
-            if(!ev) return;
-            eventoSeleccionadoModal = ev;
-
-            document.getElementById('modal-evento-titulo').innerText = `Evento de ${ev.cliente} (#${ev.id})`;
-            document.getElementById('modal-evento-contenido').innerHTML = `
-                <p><b>Fecha:</b> ${ev.fecha} a las ${ev.hora} hrs</p>
-                <p><b>Ubicación:</b> ${ev.ubicacion}</p>
-                <p><b>Total:</b> $${ev.total.toFixed(2)} | <b>Saldo:</b> $${ev.saldo.toFixed(2)}</p>
-                <p><b>Estado Pago:</b> ${ev.pagoEstado}</p>
-            `;
-            document.getElementById('modal-detalle-evento').classList.remove('hidden');
+        // --- LÓGICA DEL CALENDARIO ---
+        function cambiarMes(delta) {
+            fechaActualCalendario.setMonth(fechaActualCalendario.getMonth() + delta);
+            renderizarCalendario();
         }
 
-        function cerrarModalEvento() {
-            document.getElementById('modal-detalle-evento').classList.add('hidden');
-            eventoSeleccionadoModal = null;
-        }
+        function renderizarCalendario() {
+            const anio = fechaActualCalendario.getFullYear();
+            const mes = fechaActualCalendario.getMonth();
+            
+            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            document.getElementById('mes-anio-calendario').innerText = `${meses[mes]} ${anio}`;
 
-        function enviarWhatsAppEvento() {
-            if(!eventoSeleccionadoModal) return;
-            const ev = eventoSeleccionadoModal;
-            const clienteObj = state.clientes.find(c => c.nombre === ev.cliente);
-            const tel = clienteObj ? clienteObj.telefono : "5215555555555";
-            const msg = `✨ *PartyArt App* ✨\n\nHola *${ev.cliente}*, te recordamos tu contrato de decoración #${ev.id}.\n📅 Fecha: ${ev.fecha}\n📍 Ubicación: ${ev.ubicacion}\n💰 Saldo pendiente: $${ev.saldo.toFixed(2)}\n\n¡Gracias por tu confianza! 💖`;
-            window.open(`https://api.whatsapp.com/send?phone=52${tel}&text=${encodeURIComponent(msg)}`, '_blank');
-        }
+            const primerDiaMes = new Date(anio, mes, 1).getDay(); // 0 es Domingo
+            const diasEnMes = new Date(anio, mes + 1, 0).getDate();
 
-        function descargarPDFEventoDesdeModal() {
-            if(eventoSeleccionadoModal) generarPDFContrato(eventoSeleccionadoModal);
-        }
+            const grid = document.getElementById('grid-calendario');
+            grid.innerHTML = '';
 
-        // --- CATÁLOGO DE EVENTOS ---
-        function renderizarCatalogo() {
-            const grid = document.getElementById('catalogo-grid');
-            const filtroEstado = document.getElementById('cat-filtro-estado').value;
-            const filtroPago = document.getElementById('cat-filtro-pago').value;
-            const orden = document.getElementById('cat-orden').value;
-
-            let evs = [...state.eventos];
-            if(filtroEstado !== 'TODOS') evs = evs.filter(e => e.estado === filtroEstado);
-            if(filtroPago !== 'TODOS') evs = evs.filter(e => e.pagoEstado === filtroPago);
-
-            evs.sort((a,b) => orden === 'RECENTES' ? b.id - a.id : a.id - b.id);
-
-            if(evs.length === 0) {
-                grid.innerHTML = `<p class="text-slate-400 col-span-full text-center py-8">No se encontraron eventos con estos filtros.</p>`;
-                return;
+            for (let i = 0; i < primerDiaMes; i++) {
+                grid.innerHTML += `<div class="min-h-[60px] sm:min-h-[80px] bg-pink-50/20 rounded-xl border border-transparent"></div>`;
             }
 
-            grid.innerHTML = evs.map(ev => `
-                <div class="bg-white rounded-2xl border border-pink-100 shadow-sm overflow-hidden flex flex-col justify-between">
-                    <img src="${ev.fotos[0]}" class="w-full h-40 object-cover">
-                    <div class="p-4 space-y-2">
-                        <div class="flex justify-between items-center"><span class="text-xs font-bold text-pink-600">${ev.fecha}</span><span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 font-semibold">${ev.pagoEstado}</span></div>
-                        <h3 class="font-bold text-slate-800 text-base">${ev.cliente}</h3>
-                        <p class="text-xs text-slate-500">📍 ${ev.ubicacion}</p>
+            for (let i = 1; i <= diasEnMes; i++) {
+                const fechaStr = `${anio}-${String(mes + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                
+                const eventosDia = state.eventos.filter(e => e.fecha === fechaStr);
+                const tieneEventos = eventosDia.length > 0;
+                
+                let diaHtml = `<div ${tieneEventos ? `onclick="abrirEventosDia('${fechaStr}')"` : ''} 
+                    class="min-h-[60px] sm:min-h-[80px] p-1 sm:p-2 rounded-xl border flex flex-col items-center justify-start transition duration-200 
+                    ${tieneEventos ? 'border-pink-300 bg-pink-50 hover:bg-pink-100 cursor-pointer shadow-sm' : 'border-slate-100 bg-white'} relative">
+                    <span class="text-xs sm:text-sm font-bold ${tieneEventos ? 'text-pink-800' : 'text-slate-600'}">${i}</span>`;
+                
+                if (tieneEventos) {
+                    diaHtml += `<div class="mt-1 sm:mt-2 flex flex-wrap justify-center gap-0.5 sm:gap-1">`;
+                    const maxIconos = Math.min(eventosDia.length, 3);
+                    for(let e=0; e<maxIconos; e++) {
+                        diaHtml += `<span class="text-[10px] sm:text-xs drop-shadow-sm" title="${eventosDia[e].cliente}">🎈</span>`;
+                    }
+                    if(eventosDia.length > 3) diaHtml += `<span class="text-[10px] text-pink-600 font-black">+</span>`;
+                    diaHtml += `</div>`;
+                }
+
+                diaHtml += `</div>`;
+                grid.innerHTML += diaHtml;
+            }
+        }
+
+        function abrirEventosDia(fechaStr) {
+            const eventosDia = state.eventos.filter(e => e.fecha === fechaStr);
+            if(eventosDia.length === 0) return;
+
+            const [y, m, d] = fechaStr.split('-');
+            const mesesStr = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            document.getElementById('titulo-modal-dia').innerText = `${d} de ${mesesStr[parseInt(m)-1]} ${y}`;
+
+            const listaContainer = document.getElementById('lista-eventos-dia');
+            
+            listaContainer.innerHTML = eventosDia.map(e => `
+                <div class="p-4 bg-pink-50/50 rounded-2xl border border-pink-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 bg-pink-200 text-pink-800 text-[10px] font-bold px-3 py-1 rounded-bl-xl">${e.hora} hrs</div>
+                    
+                    <h4 class="font-bold text-slate-800 text-sm mb-1 mt-2">${e.cliente}</h4>
+                    <div class="space-y-1 mt-2">
+                        <p class="text-xs text-slate-600 flex items-center gap-1">📍 <b>${e.salon}</b></p>
+                        <p class="text-xs text-slate-600 flex items-center gap-1">✨ ${e.tipo_evento}</p>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-pink-100">
+                        <span class="text-xs font-bold px-2 py-1 rounded-lg ${e.saldo > 0 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">Saldo: $${e.saldo}</span>
+                        
+                        <button onclick="descargarContratoPDF(${e.id})" class="text-[10px] bg-pink-100 hover:bg-pink-200 text-pink-700 px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-sm">
+                            📄 Descargar Contrato
+                        </button>
                     </div>
                 </div>
             `).join('');
+
+            document.getElementById('modal-eventos-dia').classList.remove('hidden');
         }
 
-        // --- CLIENTES & INVENTARIO ---
-        function renderizarClientes() {
-            const tbody = document.getElementById('tabla-clientes-body');
-            tbody.innerHTML = state.clientes.map(c => `
-                <tr class="border-b border-pink-50 hover:bg-pink-50/20">
-                    <td class="p-3 font-bold text-slate-800">${c.nombre}</td>
-                    <td class="p-3 text-slate-600">${c.telefono}</td>
-                    <td class="p-3 text-slate-500">${c.ubicacion}</td>
-                    <td class="p-3 text-center"><button onclick="eliminarCliente(${c.id})" class="text-rose-500 font-bold">🗑️</button></td>
-                </tr>
-            `).join('');
+        // --- FUNCIONES INVENTARIO Y CLIENTES ---
+        async function guardarInventario() {
+            const nom = document.getElementById('inv-nom').value.trim();
+            const pre = parseFloat(document.getElementById('inv-pre').value) || 0;
+            
+            if(!nom) return alert("El nombre del elemento es obligatorio.");
+            
+            // Generación de identificador automático invisible para el usuario
+            const sku = 'ITM-' + Date.now(); 
+            
+            const obj = { sku, nombre: nom, precio: pre };
+            state.inventario.push(obj);
+            guardarLocal();
+            
+            if(supabaseClient) await supabaseClient.from('party_inventario').insert([obj]);
+            
+            document.getElementById('modal-inv').classList.add('hidden');
+            document.getElementById('inv-nom').value = '';
+            document.getElementById('inv-pre').value = '';
+            actualizarUI();
         }
-        function abrirModalCliente() { document.getElementById('modal-cliente').classList.remove('hidden'); }
-        function cerrarModalCliente() { document.getElementById('modal-cliente').classList.add('hidden'); }
+
         async function guardarCliente() {
-            const nombre = document.getElementById('cli-nombre').value.trim();
-            const tel = document.getElementById('cli-telefono').value.trim();
-            const ub = document.getElementById('cli-ubicacion').value.trim();
-            if(!nombre || !tel) return mostrarToast("Completa los campos obligatorios.");
+            const nom = document.getElementById('cli-nom').value.trim();
+            const tel = document.getElementById('cli-tel').value.trim();
+            const ciu = document.getElementById('cli-ciu').value.trim();
+            const dir = document.getElementById('cli-dir').value.trim();
+            if(!nom) return alert("Nombre obligatorio");
             
-            const nuevoCli = { id: Date.now(), nombre, telefono: tel, ubicacion: ub };
-            state.clientes.push(nuevoCli);
+            const obj = { id: Date.now(), nombre: nom, telefono: tel, ciudad: ciu, direccion: dir };
+            state.clientes.push(obj);
             guardarLocal();
-
-            if (supabaseClient) {
-                try { await supabaseClient.from('clientes').insert([nuevoCli]); } catch(e){}
-            }
-
-            renderizarClientes();
-            actualizarSelectsCotizador();
-            cerrarModalCliente();
-            mostrarToast("👤 Cliente registrado.");
-        }
-        async function eliminarCliente(id) {
-            state.clientes = state.clientes.filter(c => c.id !== id);
-            guardarLocal();
-            if (supabaseClient) {
-                try { await supabaseClient.from('clientes').delete().eq('id', id); } catch(e){}
-            }
-            renderizarClientes();
-            actualizarSelectsCotizador();
-        }
-
-        function renderizarInventario() {
-            const tbody = document.getElementById('tabla-inventario-body');
-            tbody.innerHTML = state.inventario.map(i => `
-                <tr class="border-b border-pink-50 hover:bg-pink-50/20">
-                    <td class="p-3 font-bold text-pink-700">${i.sku}</td>
-                    <td class="p-3 font-medium text-slate-800">${i.nombre}</td>
-                    <td class="p-3 font-bold">$${i.precio.toFixed(2)}</td>
-                    <td class="p-3 font-semibold">${i.stock} un.</td>
-                    <td class="p-3 text-center"><button onclick="eliminarInventario('${i.sku}')" class="text-rose-500 font-bold">🗑️</button></td>
-                </tr>
-            `).join('');
-        }
-        function abrirModalInventario() { document.getElementById('modal-inventario').classList.remove('hidden'); }
-        function cerrarModalInventario() { document.getElementById('modal-inventario').classList.add('hidden'); }
-        async function guardarInventarioItem() {
-            const sku = document.getElementById('inv-sku').value.trim().toUpperCase();
-            const nombre = document.getElementById('inv-nombre').value.trim();
-            const precio = parseFloat(document.getElementById('inv-precio').value) || 0;
-            const stock = parseInt(document.getElementById('inv-stock').value) || 0;
-            if(!sku || !nombre) return mostrarToast("Completa los campos.");
+            if(supabaseClient) await supabaseClient.from('party_clientes').insert([obj]);
             
-            const nuevoInv = { sku, nombre, precio, stock };
-            state.inventario.push(nuevoInv);
-            guardarLocal();
-
-            if (supabaseClient) {
-                try { await supabaseClient.from('inventario').upsert([nuevoInv]); } catch(e){}
-            }
-
-            renderizarInventario();
-            actualizarSelectsCotizador();
-            cerrarModalInventario();
-            mostrarToast("📦 Artículo agregado.");
+            document.getElementById('modal-cli').classList.add('hidden');
+            document.getElementById('cli-nom').value = '';
+            document.getElementById('cli-tel').value = '';
+            document.getElementById('cli-ciu').value = '';
+            document.getElementById('cli-dir').value = '';
+            actualizarUI();
         }
-        async function eliminarInventario(sku) {
+
+        async function borrarInv(sku) {
             state.inventario = state.inventario.filter(i => i.sku !== sku);
             guardarLocal();
-            if (supabaseClient) {
-                try { await supabaseClient.from('inventario').delete().eq('sku', sku); } catch(e){}
+            if(supabaseClient) await supabaseClient.from('party_inventario').delete().eq('sku', sku);
+            actualizarUI();
+        }
+
+        // --- LÓGICA DE CONTRATOS ---
+        function agregarItemContrato() {
+            const sku = document.getElementById('con-item').value;
+            const cant = parseInt(document.getElementById('con-cant').value) || 1;
+            const item = state.inventario.find(i => i.sku === sku);
+            if(!item) return;
+
+            state.carritoActual.push({ sku: item.sku, nombre: item.nombre, cantidad: cant, precio: item.precio });
+            renderizarCarrito();
+        }
+
+        function renderizarCarrito() {
+            const div = document.getElementById('con-lista');
+            if(state.carritoActual.length === 0) {
+                div.innerHTML = `<p class="text-slate-400 text-center py-2">Sin elementos</p>`;
+                return;
             }
-            renderizarInventario();
-            actualizarSelectsCotizador();
+            div.innerHTML = state.carritoActual.map((i, index) => `
+                <div class="flex justify-between items-center py-1 border-b border-slate-100 last:border-0">
+                    <span class="text-slate-700 font-medium">${i.cantidad}x ${i.nombre}</span>
+                    <button onclick="quitarItem(${index})" class="text-red-500 font-bold hover:text-red-700 transition">✕</button>
+                </div>
+            `).join('');
+            
+            const totalSugerido = state.carritoActual.reduce((acc, i) => acc + (i.precio * i.cantidad), 0);
+            document.getElementById('con-total-manual').value = totalSugerido;
+            calcularSaldos();
+        }
+
+        function quitarItem(index) {
+            state.carritoActual.splice(index, 1);
+            renderizarCarrito();
+        }
+
+        function calcularSaldos() {
+            const total = parseFloat(document.getElementById('con-total-manual').value) || 0;
+            const ant = parseFloat(document.getElementById('con-anticipo').value) || 0;
+            const saldo = Math.max(0, total - ant);
+            document.getElementById('con-saldo-text').innerText = `$${saldo.toFixed(2)}`;
+        }
+
+        async function generarYGuardarContrato() {
+            const cliNom = document.getElementById('con-cliente').value;
+            const salon = document.getElementById('con-salon').value;
+            const tipo = document.getElementById('con-tipo').value;
+            const fecha = document.getElementById('con-fecha').value;
+            const hora = document.getElementById('con-hora').value;
+            const adicionales = document.getElementById('con-adicionales').value;
+            
+            const total = parseFloat(document.getElementById('con-total-manual').value) || 0;
+            const anticipo = parseFloat(document.getElementById('con-anticipo').value) || 0;
+            const saldo = Math.max(0, total - anticipo);
+
+            if(!cliNom || !salon) return alert("Faltan datos obligatorios del cliente o salón.");
+
+            const nuevoEv = {
+                id: Date.now(), 
+                cliente: cliNom, 
+                salon, 
+                tipo_evento: tipo, 
+                fecha, 
+                hora,
+                items: [...state.carritoActual], 
+                total, 
+                anticipo, 
+                saldo, 
+                adicionales, 
+                estado: 'Pendiente'
+            };
+
+            // Guardar Evento
+            state.eventos.push(nuevoEv);
+            guardarLocal();
+            if(supabaseClient) await supabaseClient.from('party_eventos').insert([nuevoEv]);
+            
+            generarPDFContrato(nuevoEv);
+            
+            // Limpiar
+            state.carritoActual = [];
+            document.getElementById('con-adicionales').value = "";
+            document.getElementById('con-total-manual').value = "";
+            document.getElementById('con-anticipo').value = "0";
+            document.getElementById('con-salon').value = "";
+            document.getElementById('con-tipo').value = "";
+            
+            fechaActualCalendario = new Date(`${fecha}T00:00:00`);
+
+            renderizarCarrito();
+            actualizarUI();
+            switchTab('tab-agenda');
+        }
+
+        function descargarContratoPDF(id) {
+            const ev = state.eventos.find(e => e.id === id);
+            if(ev) generarPDFContrato(ev);
+        }
+
+        // Lógica centralizada para generar el archivo PDF
+        function generarPDFContrato(ev) {
+            const { jsPDF } = window.jspdf;
+            
+            // FORMATO CARTA (Letter: 215.9 x 279.4 mm)
+            const doc = new jsPDF({ format: 'letter' });
+            const pageWidth = doc.internal.pageSize.getWidth(); 
+            const centerX = pageWidth / 2; 
+
+            const clienteData = state.clientes.find(c => c.nombre === ev.cliente) || { ciudad: 'XALAPA', direccion: '', telefono: '' };
+            const fechaSplit = ev.fecha.split('-');
+            const mesLetra = new Date(fechaSplit[0], fechaSplit[1]-1, fechaSplit[2]).toLocaleString('es-ES', { month: 'long' });
+
+            const img = new Image();
+            img.src = 'image_2bd68c.jpg';
+
+            const renderizarPDF = () => {
+                try {
+                    doc.addImage(img, 'JPEG', 15, 10, 30, 30);
+                } catch(e) {
+                    console.warn("No se pudo cargar el logo en el PDF.");
+                }
+
+                // CABECERA
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(22);
+                doc.setTextColor(236, 72, 153); // Pink
+                doc.text("PARTY ART", centerX, 20, {align: "center"});
+                
+                doc.setFontSize(10);
+                doc.setTextColor(50, 50, 50);
+                doc.setFont("helvetica", "italic");
+                doc.text(`"Decoramos tu evento o momento tan especial"`, centerX, 26, {align: "center"});
+                
+                doc.setFont("helvetica", "normal");
+                doc.text("2281690526", centerX, 32, {align: "center"});
+                doc.text("Xalapa-Coatepec y alrededores", centerX, 38, {align: "center"});
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text("CONTRATO DE PRESTACIÓN DE SERVICIOS", centerX, 50, {align: "center"});
+
+                // TEXTO LEGAL
+                doc.setFontSize(9);
+                doc.setFont("helvetica", "normal");
+                
+                const introText = `CONTRATO DE PRESTACION DE SERVICIOS QUE CELEBRAN POR UNA PARTE LA C. MIRYAM LIZETH DOMINGUEZ GARCIA EN SU CALIDAD DE REPRESENTANTE DE SERVICIO DE DECORACION DENOMINADA "PARTY ART; DECORACIONES", QUE EN LO SUCESIVO SE LE DENOMINARA "EL CONTRATADO" Y POR LA OTRA ${ev.cliente.toUpperCase()} EN LA CIUDAD DE ${(clienteData.ciudad || 'XALAPA').toUpperCase()} VER. QUE EN LO SUCESIVO SE LE DENOMINARA "EL CONTRATANTE".`;
+                
+                // Max Width ajustado al tamaño carta
+                doc.text(introText, 15, 60, {maxWidth: pageWidth - 30, align: "justify"});
+
+                doc.setFont("helvetica", "bold");
+                doc.text("ANTECEDENTES", centerX, 80, {align: "center"});
+                
+                doc.text("DE \"EL CONTRATADO\"--", 15, 88);
+                doc.setFont("helvetica", "normal");
+                doc.text("EL CONTRATADO, QUE REPRESENTA LA EMPRESA \"PARTY ART; DECORACIONES\", CON DOMICILIO EN 16 DE SEPTIEMBRE No. 117 COL. CENTRO, COATEPEC, VER., RECONOCE POSEER FACULTADES Y VOLUNTAD PARA CELEBRAR EL PRESENTE CONTRATO.", 15, 94, {maxWidth: pageWidth - 30, align: "justify"});
+
+                doc.setFont("helvetica", "bold");
+                doc.text("DE \"EL CONTRATANTE\"--", 15, 106);
+                doc.setFont("helvetica", "normal");
+                doc.text(`MANIFIESTA TENER SU DOMICILIO Y TELÉFONO EN: ${(clienteData.direccion || '').toUpperCase()} TEL: ${clienteData.telefono || ''} TAMBIEN RECONOCE POSEER FACULTADES Y VOLUNTAD PARA LA CELEBRACION DEL PRESENTE CONTRATO.`, 15, 112, {maxWidth: pageWidth - 30, align: "justify"});
+
+                doc.text("AMBAS PARTES RECONOCEN LA PERSONALIDAD CON QUE SE OSTENTAN Y ACUERDAN CELEBRAR EL PRESENTE CONTRATO, DESARROLLANDOSE BAJO LAS SIGUIENTES:", 15, 124, {maxWidth: pageWidth - 30, align: "justify"});
+
+                doc.setFont("helvetica", "bold");
+                doc.text("CLAUSULAS", centerX, 136, {align: "center"});
+
+                // CLAUSULAS
+                doc.setFont("helvetica", "normal");
+                let y = 144;
+                
+                doc.text(`I.- "EL CONTRATANTE" ${ev.cliente.toUpperCase()} CONTRATA EL SERVICIO DE DECORACIÓN PARA LA DECORACION EN EL SALON: ${ev.salon.toUpperCase()} UBICADO EN: ${(clienteData.ciudad || '').toUpperCase()} TIPO DE EVENTO: ${(ev.tipo_evento || '').toUpperCase()} HORA DEL EVENTO: ${ev.hora} HRS.`, 15, y, {maxWidth: pageWidth - 30});
+                
+                y += 12;
+                doc.text(`II.- EL EVENTO SE EFECTURÁ EL DIA: ${fechaSplit[2]} DE ${mesLetra.toUpperCase()} DE ${fechaSplit[0]}.`, 15, y);
+                
+                y += 6;
+                doc.text(`III.- EL COSTO DEL SERVICIO ES POR LA CANTIDAD DE $ ${ev.total.toFixed(2)}`, 15, y);
+                
+                y += 6;
+                doc.text(`IV.- EL SERVICIO CONTRATADO INCLUYE:`, 15, y);
+                y += 5;
+                
+                const itemsStr = ev.items && ev.items.length > 0 ? ev.items.map(i => `${i.cantidad} ${i.nombre}`).join(', ') : 'NINGUNO';
+                doc.text(itemsStr.toUpperCase(), 20, y, {maxWidth: pageWidth - 35});
+                
+                y += Math.ceil((itemsStr.length || 1) / 95) * 5 + 4;
+                
+                doc.text(`V.- "EL CONTRATANTE" PAGA LA CANTIDAD $ ${ev.anticipo.toFixed(2)} POR CONCEPTO DE ANTICIPO Y EL RESTO EL DÍA DEL EVENTO.`, 15, y, {maxWidth: pageWidth - 30});
+                
+                y += 10;
+                doc.text(`VI.- SI POR CUALQUIER CIRCUNSTANCIA "EL CONTRATANTE" CANCELARE EL PRESENTE CONTRATO, POR ESTE HECHO PAGARÁ EL CONTRATO EL EQUIVALENTE AL 50% DEL MONTO TOTAL QUE SEÑALA LA CLAUSULA TERCERA DEL PRESENTE CONTRATO, DANDO POSIBIBILIDAD DE CAMBIO DE FECHA (SUJETA A DISPONIBILIDAD DE AGENDA) 7 DIAS PREVIOS AL EVENTO.`, 15, y, {maxWidth: pageWidth - 30, align: "justify"});
+
+                y += 16;
+                doc.text(`VII.- SI "EL CONTRATADO" CANCELARE EL CONTRATO SE SUJETARÁ A LO ESTABLECIDO EN LA CLAUSULA ANTERIOR.`, 15, y, {maxWidth: pageWidth - 30});
+
+                y += 10;
+                doc.text(`VIII.- EN CASO DE SUSCITARSE CUALQUIER DAÑO AL EQUIPO DEL SERVICIO COMO ES: MOBILIARIO, MANTELERIA, ESTRUCTURAS RENTADAS, "EL CONTRATANTE" SE OBLIGA DIRECTAMENTE DE LA RESPONSABILIDAD QUE DE ELLO DERIVE.- "EL CONTRATADO" SE COMPROMETE A CUMPLIR A TODAS Y CADA UNA DE LOS SERVICIOS ESTIPULADOS EN EL CONTRATO, NO DEJANDO DUDAS, TODO QUEDARÁ PLASMADO POR ESCRITO EN ESTE DOCUMENTO, Y ENTREGAR EN TIEMPO Y FORMA EL SERVICIO AL TIEMPO PREVIO DE INICIAR EL EVENTO.`, 15, y, {maxWidth: pageWidth - 30, align: "justify"});
+
+                y += 24;
+                const notasAdicionales = ev.adicionales && ev.adicionales.trim() !== '' ? ev.adicionales.toUpperCase() : 'NINGUNA';
+                doc.text(`ADICIONALES; ${notasAdicionales}`, 15, y, {maxWidth: pageWidth - 30});
+
+                y += 10;
+                doc.text(`EL CONTRATANTE SE COMPROMETE A RESPETAR LOS TÉRMINOS DEL PRESENTE CONTRATO PRECISADOS EN LAS CLAUSULAS ANTERIORES Y ESTÁ DE ACUERDO EN TODO Y EN CADA UNA DE ELLAS ESTANDO DEBIDAMENTE ENTERADO POR HABERLES SIDO LEIDAS Y TENER CAPACIDAD Y VOLUNTAD PARA LA CELEBRACIÓN DEL PRESENTE, SUJETANDOSE EN LIQUIDAR EL COMPLETO DEL MONTO TOTAL AL TERMINO DEL SERVICIO.`, 15, y, {maxWidth: pageWidth - 30, align: "justify"});
+
+                // FIRMAS
+                y += 25;
+                const hoy = new Date();
+                doc.text(`XALAPA VER. A ${hoy.getDate()} DE ${hoy.toLocaleString('es-ES', { month: 'long' }).toUpperCase()} DE ${hoy.getFullYear()}`, centerX, y, {align: "center"});
+
+                y += 20;
+                doc.setDrawColor(0,0,0);
+
+                // Firma Contratante (Izquierda) centrado a 60
+                doc.text(ev.cliente.toUpperCase(), 60, y - 2, {align: "center"}); 
+                doc.line(20, y, 100, y);
+                doc.text("NOMBRE Y FIRMA", 60, y + 5, {align: "center"});
+                doc.text(`"EL CONTRATANTE"`, 60, y + 10, {align: "center"});
+
+                // Firma Contratado (Derecha) centrado a pageWidth - 60
+                const rightCenter = pageWidth - 60;
+                doc.text("LIC. MIRYAM LIZETH DOMINGUEZ GARCIA", rightCenter, y - 2, {align: "center"});
+                doc.line(pageWidth - 100, y, pageWidth - 20, y);
+                doc.text("NOMBRE Y FIRMA", rightCenter, y + 5, {align: "center"});
+                doc.text(`"EL CONTRATADO"`, rightCenter, y + 10, {align: "center"});
+
+                doc.save(`Contrato_PartyArt_${ev.cliente.replace(/\s+/g, '_')}.pdf`);
+            };
+
+            img.onload = renderizarPDF;
+            img.onerror = renderizarPDF;
         }
     </script>
 </body>

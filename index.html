@@ -1865,11 +1865,14 @@
                 escribirBloque(`III.- EL COSTO DEL SERVICIO ES POR LA CANTIDAD DE $ ${Number(ev.total || 0).toFixed(2)}`, marginX, maxW, "normal", 9, "left", 3.5);
 
                 escribirBloque(`IV.- EL SERVICIO CONTRATADO INCLUYE:`, marginX, maxW, "normal", 9, "left", 1.5);
-                const itemsStr = ev.items && ev.items.length > 0 ? ev.items.map(i => `${i.cantidad} ${i.nombre}`).join(', ') : 'NINGUNO';
+                
+				const itemsStr = ev.items && ev.items.length > 0 ? ev.items.map(i => `${i.cantidad} ${i.nombre}`).join(', ') : 'NINGUNO';
                 escribirBloque(itemsStr.toUpperCase(), marginX + 5, maxW - 5, "normal", 9, "left", 3.5);
+				
 				const notasAdicionales = ev.adicionales && ev.adicionales.trim() !== '' ? ev.adicionales.toUpperCase() : 'NINGUNA';
                 escribirBloque(`ADICIONALES: ${notasAdicionales}`, marginX, maxW, "normal", 9, "left", 4);
-                escribirBloque(`V.- "EL CONTRATANTE" PAGA LA CANTIDAD $ ${Number(ev.anticipo || 0).toFixed(2)} POR CONCEPTO DE ANTICIPO Y EL RESTO EL DÍA DEL EVENTO.`, marginX, maxW, "normal", 9, "left", 3.5);
+                
+				escribirBloque(`V.- "EL CONTRATANTE" PAGA LA CANTIDAD $ ${Number(ev.anticipo || 0).toFixed(2)} POR CONCEPTO DE ANTICIPO Y EL RESTO EL DÍA DEL EVENTO.`, marginX, maxW, "normal", 9, "left", 3.5);
 
                 escribirBloque(`VI.- SI POR CUALQUIER CIRCUNSTANCIA "EL CONTRATANTE" CANCELARE EL PRESENTE CONTRATO, POR ESTE HECHO PAGARÁ EL CONTRATO EL EQUIVALENTE AL 50% DEL MONTO TOTAL QUE SEÑALA LA CLÁUSULA TERCERA DEL PRESENTE CONTRATO, DANDO POSIBILIDAD DE CAMBIO DE FECHA (SUJETA A DISPONIBILIDAD DE AGENDA) 7 DÍAS PREVIOS AL EVENTO.`, marginX, maxW, "normal", 9, "justify", 3.5);
 

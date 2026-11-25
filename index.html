@@ -1867,7 +1867,8 @@
                 escribirBloque(`IV.- EL SERVICIO CONTRATADO INCLUYE:`, marginX, maxW, "normal", 9, "left", 1.5);
                 const itemsStr = ev.items && ev.items.length > 0 ? ev.items.map(i => `${i.cantidad} ${i.nombre}`).join(', ') : 'NINGUNO';
                 escribirBloque(itemsStr.toUpperCase(), marginX + 5, maxW - 5, "normal", 9, "left", 3.5);
-
+				const notasAdicionales = ev.adicionales && ev.adicionales.trim() !== '' ? ev.adicionales.toUpperCase() : 'NINGUNA';
+                escribirBloque(`ADICIONALES: ${notasAdicionales}`, marginX, maxW, "normal", 9, "left", 4);
                 escribirBloque(`V.- "EL CONTRATANTE" PAGA LA CANTIDAD $ ${Number(ev.anticipo || 0).toFixed(2)} POR CONCEPTO DE ANTICIPO Y EL RESTO EL DÍA DEL EVENTO.`, marginX, maxW, "normal", 9, "left", 3.5);
 
                 escribirBloque(`VI.- SI POR CUALQUIER CIRCUNSTANCIA "EL CONTRATANTE" CANCELARE EL PRESENTE CONTRATO, POR ESTE HECHO PAGARÁ EL CONTRATO EL EQUIVALENTE AL 50% DEL MONTO TOTAL QUE SEÑALA LA CLÁUSULA TERCERA DEL PRESENTE CONTRATO, DANDO POSIBILIDAD DE CAMBIO DE FECHA (SUJETA A DISPONIBILIDAD DE AGENDA) 7 DÍAS PREVIOS AL EVENTO.`, marginX, maxW, "normal", 9, "justify", 3.5);
@@ -1876,8 +1877,7 @@
 
                 escribirBloque(`VIII.- UNA VEZ ENTREGADA LA DECORACIÓN TERMINADA EN EL LUGAR DEL EVENTO, ES RESPONSABILIDAD DEL CONTRATANTE MANTENERLA EN BUENAS CONDICIONES. EN CASO DE SUSCITARSE CUALQUIER DAÑO AL EQUIPO DEL SERVICIO COMO ES: MOBILIARIO, MANTELERÍA, ESTRUCTURAS RENTADAS, "EL CONTRATANTE" SE OBLIGA DIRECTAMENTE DE LA RESPONSABILIDAD QUE DE ELLO DERIVE Y SE HARÁ CARGO DE LA REPOSICIÓN/PAGO PARCIAL O TOTAL DEL MATERIAL EN CUESTIÓN, ESTO SEGÚN SEA VALORADO AL MOMENTO.- "EL CONTRATADO" SE COMPROMETE A CUMPLIR A TODAS Y CADA UNA DE LOS SERVICIOS ESTIPULADOS EN EL CONTRATO, NO DEJANDO DUDAS, TODO QUEDARÁ PLASMADO POR ESCRITO EN ESTE DOCUMENTO, Y ENTREGAR EN TIEMPO Y FORMA EL SERVICIO AL TIEMPO PREVIO DE INICIAR EL EVENTO.`, marginX, maxW, "normal", 9, "justify", 4);
 
-                const notasAdicionales = ev.adicionales && ev.adicionales.trim() !== '' ? ev.adicionales.toUpperCase() : 'NINGUNA';
-                escribirBloque(`ADICIONALES: ${notasAdicionales}`, marginX, maxW, "normal", 9, "left", 4);
+                
 
                 escribirBloque(`EL CONTRATANTE SE COMPROMETE A RESPETAR LOS TÉRMINOS DEL PRESENTE CONTRATO PRECISADOS EN LAS CLÁUSULAS ANTERIORES Y ESTÁ DE ACUERDO EN TODO Y EN CADA UNA DE ELLAS ESTANDO DEBIDAMENTE ENTERADO POR HABERLES SIDO LEÍDAS Y TENER CAPACIDAD Y VOLUNTAD PARA LA CELEBRACIÓN DEL PRESENTE, SUJETÁNDOSE EN LIQUIDAR EL COMPLETO DEL MONTO TOTAL AL TÉRMINO DEL SERVICIO.`, marginX, maxW, "normal", 9, "justify", 8);
 
